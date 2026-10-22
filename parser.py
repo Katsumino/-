@@ -1,6 +1,3 @@
-from lexer import Token
-
-
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
@@ -12,14 +9,14 @@ class Parser:
     def consume(self, expected=None):
         tok = self.tokens[self.pos]
         if expected and tok.type != expected:
-            raise SyntaxError(f"Ожидался {expected}, получен {tok.type}")
+            raise ValueError(f"Ожидался {expected}, получен {tok.type}")
         self.pos += 1
         return tok
 
     def parse(self):
         node = self.expression()
         if self.peek().type != "EOF":
-            raise SyntaxError(f"Лишние символы после выражения: {self.peek()}")
+            raise ValueError(f"Лишние символы после выражения: {self.peek()}")
         return node
 
     def expression(self):
@@ -81,4 +78,4 @@ class Parser:
             self.consume("RPAREN")
             return ("call", name, args)
 
-        raise SyntaxError(f"Неожиданный токен: {tok}")
+        raise ValueError(f"Неожиданный токен: {tok}")

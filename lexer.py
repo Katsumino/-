@@ -12,6 +12,34 @@ class Lexer:
         self.text = text
         self.pos = 0
 
+    def check_alphabet(self):
+        allowed = set("0123456789.+-*/() ,<>=!abcdefghijklmnopqrstuvwxyz_")
+        for i, ch in enumerate(self.text):
+            if ch not in allowed:
+                raise ValueError(f"Недопустимый символ: '{ch}' на позиции {i + 1}")
+
+    def check_typos(self):
+        s = self.text.strip()
+        if not s:
+            raise ValueError("Выражение пустое")
+
+        if s.count('(') != s.count(')'):
+            raise ValueError("Несовпадение скобок")
+
+        # Прячем двухсимвольные операторы
+        s_rep = s.replace('!=', 'q').replace('<=', 'q').replace('>=', 'q').replace('==', 'q')
+        
+        # Меняем все оставшиеся операторы на '+'
+        s_rep = s_rep.replace('-', '+').replace('*', '+').replace('/', '+')
+        
+        if '++' in s_rep:
+            raise ValueError("Два оператора подряд")
+
+        if s[0] in '*/|':
+            raise ValueError("Выражение не может начинаться с оператора (кроме + или -)")
+        if s[-1] in '+-*/|<>!=,':
+            raise ValueError("Выражение не может заканчиваться оператором")
+
     def skip_spaces(self):
         while self.pos < len(self.text) and self.text[self.pos].isspace():
             self.pos += 1
@@ -24,7 +52,7 @@ class Lexer:
                 dots += 1
             self.pos += 1
         if dots > 1:
-            raise SyntaxError(f"Некорректное число: {self.text[start:self.pos]}")
+            raise ValueError(f"Некорректное число: {self.text[start:self.pos]}")
         return Token("NUMBER", float(self.text[start:self.pos]))
 
     def read_identifier(self):
@@ -49,9 +77,12 @@ class Lexer:
         if ch in one:
             self.pos += 1
             return Token(one[ch])
-        raise SyntaxError(f"Неизвестный символ: {ch!r} на позиции {self.pos}")
+        raise ValueError(f"Неизвестный символ: {ch!r} на позиции {self.pos}")
 
     def tokenize(self):
+        self.check_alphabet()
+        self.check_typos()
+
         tokens = []
         while self.pos < len(self.text):
             self.skip_spaces()

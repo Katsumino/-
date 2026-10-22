@@ -52,8 +52,6 @@ class Evaluator:
             try:
                 return self.FUNCTIONS[name](*args)
             except ValueError:
-                raise ValueError(
-                    f"Функция {name} не может быть вычислена для аргументов {args}"
-                )
+                raise ValueError(f"Функция {name} не может быть вычислена для аргументов {args}")
 
         raise RuntimeError(f"Неизвестный узел: {node}")
